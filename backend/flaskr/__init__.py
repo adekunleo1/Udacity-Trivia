@@ -47,7 +47,7 @@ def create_app(test_config=None):
 
     # Endpoint to handle GET requests
     # for all available categories.
-    @app.route('/categories')
+    @app.route('/api/v1/categories')
     def get_categories():
         categories = Category.query.order_by(Category.id).all()
         if len(categories) == 0:
@@ -59,7 +59,7 @@ def create_app(test_config=None):
         })
 
     # Endpoint to handle GET request to get all the questions and the categories
-    @app.route('/questions')
+    @app.route('/api/v1/questions')
     def get_questions():
         questions = Question.query.order_by(Question.id).all()
         categories = Category.query.order_by(Category.id).all()
@@ -76,7 +76,7 @@ def create_app(test_config=None):
         })
 
     # Endpoint to DELETE question using a question ID.
-    @app.route('/questions/<int:question_id>', methods=['DELETE'])
+    @app.route('/api/v1/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
         try:
             question = Question.query.filter(Question.id == question_id).one_or_none()
@@ -94,7 +94,7 @@ def create_app(test_config=None):
             abort(422)
 
     # endpoint to POST a new question
-    @app.route('/questions', methods=['POST'])
+    @app.route('/api/v1/questions', methods=['POST'])
     def create_question():
         body = request.get_json()
 
@@ -137,7 +137,7 @@ def create_app(test_config=None):
             abort(422)
 
     # GET endpoint to get questions based on category.
-    @app.route('/categories/<int:category_id>/questions', methods=['GET'])
+    @app.route('/api/v1/categories/<int:category_id>/questions', methods=['GET'])
     def get_questions_by_category(category_id):
         category = Category.query.filter_by(id=category_id).one_or_none()
         if category is None:
@@ -154,7 +154,7 @@ def create_app(test_config=None):
         })
 
     # POST endpoint to get questions to play the quiz.
-    @app.route('/quizzes', methods=['POST'])
+    @app.route('/api/v1/quizzes', methods=['POST'])
     def get_quiz_questions():
         previous_questions = request.json.get('previous_questions')
         quiz_category = request.json.get('quiz_category')
