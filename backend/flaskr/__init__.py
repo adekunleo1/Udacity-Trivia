@@ -1,10 +1,11 @@
+from math import remainder
 import os
-import random
-
-from flask import Flask, abort, jsonify, request
-from flask_cors import CORS
+from unicodedata import category
+from flask import Flask, jsonify, request, abort
 from flask_sqlalchemy import SQLAlchemy
-from models import Category, Question, setup_db
+from flask_cors import CORS
+import random
+from models import setup_db, Question, Category, db
 from sqlalchemy.sql.expression import func
 
 QUESTIONS_PER_PAGE = 10
@@ -34,20 +35,18 @@ def create_app(test_config=None):
     setup_db(app)
 
      # Set up CORS. Allow '*' for origins.
-    CORS(app, resources={r"/api/v1/": {"origins": "https://127.0.0.1:5000"}})
+    CORS(app, resources={r"*/api/*": {"origins": '*'}})
 
     # Use the after_request decorator to set Access-Control-Allow
     @app.after_request
     def after_request(response):
-        response.headers.add('Access-Control-Allow-Headers',
-                             'Content-Type,Authorization,true')
-        response.headers.add('Access-Control-Allow-Methods',
-                             'GET,PUT,POST,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization, true')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS')
         return response
 
     # Endpoint to handle GET requests
     # for all available categories.
-    @app.route('/api/v1/categories')
+    @app.route('/categories')
     def get_categories():
         categories = Category.query.order_by(Category.id).all()
         if len(categories) == 0:
@@ -59,7 +58,7 @@ def create_app(test_config=None):
         })
 
     # Endpoint to handle GET request to get all the questions and the categories
-    @app.route('/api/v1/questions')
+    @app.route('/questions')
     def get_questions():
         questions = Question.query.order_by(Question.id).all()
         categories = Category.query.order_by(Category.id).all()
@@ -76,7 +75,7 @@ def create_app(test_config=None):
         })
 
     # Endpoint to DELETE question using a question ID.
-    @app.route('/api/v1/questions/<int:question_id>', methods=['DELETE'])
+    @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
         try:
             question = Question.query.filter(Question.id == question_id).one_or_none()
@@ -94,7 +93,7 @@ def create_app(test_config=None):
             abort(422)
 
     # endpoint to POST a new question
-    @app.route('/api/v1/questions', methods=['POST'])
+    @app.route('/questions', methods=['POST'])
     def create_question():
         body = request.get_json()
 
@@ -137,7 +136,7 @@ def create_app(test_config=None):
             abort(422)
 
     # GET endpoint to get questions based on category.
-    @app.route('/api/v1/categories/<int:category_id>/questions', methods=['GET'])
+    @app.route('/categories/<int:category_id>/questions', methods=['GET'])
     def get_questions_by_category(category_id):
         category = Category.query.filter_by(id=category_id).one_or_none()
         if category is None:
@@ -154,33 +153,33 @@ def create_app(test_config=None):
         })
 
     # POST endpoint to get questions to play the quiz.
-    @app.route('/api/v1/quizzes', methods=['POST'])
+    @app.route('/quizzes', methods=['POST'])
     def get_quiz_questions():
         previous_questions = request.json.get('previous_questions')
         quiz_category = request.json.get('quiz_category')
+        """
+        Gets question for quiz
+        :return: Uniques quiz question or None
+        """
+        previous_questions = request.json.get('previous_questions')
+        quiz_category = request.json.get('quiz_category')
+        if not quiz_category:
+            return abort(400, 'Required keys missing from request body')
         category_id = int(quiz_category.get('id'))
-
-        category = Category.query.filter_by(id=category_id).one_or_none()
-        
-        if category_id:
-            questions = Question.query.filter(
-                Question.category == category_id,
-                ~Question.id.in_(previous_questions))
-        else:
-            questions = Question.query.filter(~Question.id.in_(previous_questions))
-
+        questions = Question.query.filter(
+            Question.category == category_id,
+            ~Question.id.in_(previous_questions)) if category_id else \
+            Question.query.filter(~Question.id.in_(previous_questions))
         question = questions.order_by(func.random()).first()
-
         if not question:
             return jsonify({
                 'success': True,
                 'question': None
             })
-
         return jsonify({
-            'success': True,
-            'question': question.format()
-        })
+                'success': True,
+                'question': question.format()
+            })
 
     # Error handlers for 400, 404, 422 and 500
     @app.errorhandler(400)

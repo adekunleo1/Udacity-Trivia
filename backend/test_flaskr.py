@@ -30,7 +30,7 @@ class TriviaTestCase(unittest.TestCase):
         pass
 
     def test_get_paginated_questions(self):
-        res = self.client().get('/questions')
+        res = self.client().get('/api/v1/questions')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -40,7 +40,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data['questions']))
 
     def test_404_requesting_beyond_valid_page(self):
-        res = self.client().get('/questions?page=1000', json={'difficulty': 1})
+        res = self.client().get('/api/v1/questions?page=1000', json={'difficulty': 1})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
@@ -48,7 +48,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'Resource Not Found')
 
     def test_get_categories(self):
-        res = self.client().get('/categories')
+        res = self.client().get('/api/v1/categories')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -57,7 +57,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data['categories']))
 
     def test_get_questions_by_category(self):
-        res = self.client().get('categories/1/questions')
+        res = self.client().get('/api/v1/categories/1/questions')
         data = json.loads(res.data)
 
         self.assertEqual(data['success'], True)
@@ -65,7 +65,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['categories'])
 
     def test_404_get_questions_by_category(self):
-        res = self.client().get('categories/100/questions')
+        res = self.client().get('/api/v1/categories/100/questions')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
@@ -73,14 +73,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'Resource Not Found')
 
     def test_add_question(self):
-        res = self.client().post('/questions', json=self.new_question)
+        res = self.client().post('/api/v1/questions', json=self.new_question)
         self.assertTrue(res.status_code, 200)
 
         data = json.loads(res.data)
         self.assertTrue(data['success'])
 
     def test_delete_question(self):
-        res = self.client().delete('/questions/2')
+        res = self.client().delete('/api/v1/questions/2')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -90,7 +90,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data['questions']))
 
     def test_422_if_question_to_delete_does_not_exist(self):
-        res = self.client().delete('/questions/100')
+        res = self.client().delete('/api/v1/questions/100')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 422)
@@ -98,7 +98,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'Not Processable')
 
     def test_search_question(self):
-        res = self.client().post('/questions', json={'searchTerm': 'question'})
+        res = self.client().post('/api/v1/questions', json={'searchTerm': 'question'})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -106,7 +106,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(len(data['questions']), 10)
 
     def test_get_quiz(self):
-        res = self.client().post('/quizzes',
+        res = self.client().post('/api/v1/quizzes',
                                  json={'previous_questions': [],
                                        'quiz_category':
                                        {'id': '5', 'type': 'Entertainment'}})
@@ -117,7 +117,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['question']['category'], 5)
 
     def test_422_get_quiz(self):
-        res = self.client().post('/quizzes',
+        res = self.client().post('/api/v1/quizzes',
                                  json={
                                      'previous_questions': []
                                  })
