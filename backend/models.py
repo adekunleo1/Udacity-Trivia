@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 
 database_name = 'trivia'
-database_path = 'postgresql://postgres:ade@127.0.0.1:5432/trivia'
+database_path = 'postgresql://postgres:ade@localhost:5432/trivia'
 db = SQLAlchemy()
 
 """
